@@ -11,6 +11,8 @@
 #    define EXPIMP_STL extern
 #endif
 
+#define DB_NAME "ftag.db"
+
 using namespace std;
 
 class EXPIMP Tag
@@ -40,6 +42,8 @@ public:
 	int get_tag_count();
 	vector<Tag> get_tags();
 	int find_tag(LPWSTR tagName);
+	void save(FILE* file);
+	void load(FILE* file);
 };
 
 class EXPIMP TaggedFile
@@ -56,6 +60,8 @@ public:
 	int get_tag_count();
 	vector<Tag> get_tags();
 	int find_tag(LPWSTR tagName, int gid);
+	void save(FILE* file);
+	void load(FILE* file);
 };
 
 EXPIMP_STL template class EXPIMP vector<TagGroup>;
@@ -84,6 +90,8 @@ public:
 	void remove_tag_from_file(LPWSTR fileName, LPWSTR groupName, LPWSTR tagName);
 	//Returns list of filenames as vector of LPWSTRs
 	vector<LPWSTR> filter(LPWSTR groupName, LPWSTR tagName);
+	void save_db();
+	bool load_db();
 	void DEBUG_info();
 };
 
