@@ -1,7 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
+#include <stdlib.h>
+#include <vector>
 #include <string>
+#include <chrono>
 
 #ifdef FTAGLIB_EXPORTS
 #    define EXPIMP __declspec(dllexport)
@@ -17,49 +19,71 @@ using namespace std;
 
 class EXPIMP Tag
 {
-public:
+	long id;
 	wchar_t name[256];
-	int tagGroupIndex;
+	long tagGroupId;
+public:
 	Tag();
-	Tag(LPWSTR, int);
+	Tag(long, LPWSTR, long);
+	long get_id();
+	long get_group_id();
+	LPWSTR get_name();
+	void ungroup();
 };
 
 EXPIMP_STL template class EXPIMP vector<Tag>;
 
 class EXPIMP TagGroup
 {
-public:
-	int index;
+	long id;
 	wchar_t name[255];
 	int tag_count;
 	vector<Tag> tags;
+public:
 	TagGroup();
-	TagGroup(LPWSTR n, int i);
+	TagGroup(long, LPWSTR n, int i);
 	LPWSTR get_name();
-	void add_tag(LPWSTR tagName);
-	void remove_tag(LPWSTR);
+	long get_id();
+	void add_tag(long uid,LPWSTR tagName);
+	void remove_tag(long);
 	void remove_tag(int);
 	int get_tag_count();
-	vector<Tag> get_tags();
+	const vector<Tag>& get_tags();
 	int find_tag(LPWSTR tagName);
+	Tag* get_tag(long tid);
 	void save(FILE* file);
 	void load(FILE* file);
 };
 
-class EXPIMP TaggedFile
+class TagGroupSkel
 {
 public:
+	long gid;
+	vector<long> tids;
+	TagGroupSkel(long gid)
+	{
+		this->gid = gid;
+	}
+};
+
+class EXPIMP TaggedFile
+{
+	long id;
 	wchar_t name[255];
 	int tag_count;
-	vector<Tag> tags;
+	vector<TagGroupSkel> tag_groups;
+public:
 	TaggedFile();
-	TaggedFile(LPWSTR n);
+	TaggedFile(long, LPWSTR n);
+	long get_id();
 	LPWSTR get_name();
-	void add_tag(Tag* tag);
-	void remove_tag(Tag* tag);
 	int get_tag_count();
-	vector<Tag> get_tags();
-	int find_tag(LPWSTR tagName, int gid);
+	const vector<TagGroupSkel>& get_tag_groups();
+	void add_tag(long gid,long tid);
+	void remove_tag(long gid, long tid);
+	void remove_group(long gid);
+	vector<long> get_tags();
+	bool check_tag(long gid, long tid);
 	void save(FILE* file);
 	void load(FILE* file);
 };
@@ -75,13 +99,20 @@ public:
 	vector<TagGroup> tag_groups;
 	vector<TaggedFile> files;
 	int file_count, group_count;
+	long last_id;
 	TagDB();
 	TagDB(LPWSTR n, LPWSTR path);
+	long gen_id();
+	TagGroup* get_tag_group(LPWSTR groupName);
+	TagGroup* get_tag_group(long gid);
+	TaggedFile* get_file(LPWSTR fileName);
 	void add_group(LPWSTR groupName);
 	//Returns index of added file
 	int add_file(LPWSTR fileName);
+	void remove_group(LPWSTR groupName);
 	//Return index of tag group
 	int find_tag_group(LPWSTR groupName);
+	int find_tag_group(long gid);
 	//Returns index of file
 	int find_file(LPWSTR fileName);
 	void add_tag_to_group(LPWSTR groupName, LPWSTR tagName);
